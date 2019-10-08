@@ -40,7 +40,7 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
 
     public static final String PACKAGE_URL = "packageUrl";
     public static final String DEFAULT_LIBRARY = "urllib3";
-
+    protected String ApiPort;
     protected String packageName = "openapi_client";
     protected String packageVersion = "1.0.0";
     protected String projectName; // for setup.py, e.g. petstore-api
@@ -179,6 +179,10 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
             setPackageName((String) additionalProperties.get(CodegenConstants.PACKAGE_NAME));
         }
 
+        if (additionalProperties.containsKey(CodegenConstants.API_PORT)) {
+            setApiPort((String)additionalProperties.get(CodegenConstants.API_PORT));
+        }
+
         if (additionalProperties.containsKey(CodegenConstants.PROJECT_NAME)) {
             setProjectName((String) additionalProperties.get(CodegenConstants.PROJECT_NAME));
         } else {
@@ -198,6 +202,7 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
 
         additionalProperties.put(CodegenConstants.PROJECT_NAME, projectName);
         additionalProperties.put(CodegenConstants.PACKAGE_NAME, packageName);
+        additionalProperties.put(CodegenConstants.API_PORT, ApiPort);
         additionalProperties.put(CodegenConstants.PACKAGE_VERSION, packageVersion);
 
         if (generateSourceCodeOnly) {
@@ -576,6 +581,10 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    public void setApiPort(String ApiPort) {
+        this.ApiPort = ApiPort;
     }
 
     public void setProjectName(String projectName) {

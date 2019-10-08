@@ -141,6 +141,9 @@ public class CodegenConstants {
     public static final String ENSURE_UNIQUE_PARAMS = "ensureUniqueParams";
     public static final String ENSURE_UNIQUE_PARAMS_DESC = "Whether to ensure parameter names are unique in an operation (rename parameters that are not).";
 
+    public static final String API_PORT = "apiPort";
+    public static final String API_POR_DESC = "port for api lib";
+
     public static final String PROJECT_NAME = "projectName";
     public static final String PACKAGE_NAME = "packageName";
     public static final String PACKAGE_NAME_DESC = "package for generated classes (where supported)";
