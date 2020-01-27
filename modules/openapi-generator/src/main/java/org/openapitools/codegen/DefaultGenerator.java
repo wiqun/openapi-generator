@@ -17,6 +17,16 @@
 
 package org.openapitools.codegen;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.JSONWrappedObject;
+import com.google.common.collect.Lists;
+import com.sun.org.apache.xerces.internal.xs.StringList;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -47,10 +57,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultGenerator extends AbstractGenerator implements Generator {
     protected final Logger LOGGER = LoggerFactory.getLogger(DefaultGenerator.class);
@@ -1154,6 +1167,49 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
         return operations;
     }
 
+    private List<String> getEnumList(String jsonSchema){
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = null;
+        try {
+            root = (ObjectNode) mapper.readTree(jsonSchema);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Cannot parse Model's json schema: " + e.toString());
+        }
+
+        return getEnumList(root);
+    }
+
+    private List<String> getEnumList(ObjectNode node){
+        List<String> enumList = null;
+        for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
+            Map.Entry entry = it.next();
+            String key = (String) entry.getKey();
+            Object value = entry.getValue();
+            if(key.equals("enum")){
+                enumList = new ArrayList<>();
+                for (JsonNode v : (ArrayNode) value) {
+                    enumList.add(v.asText());
+                }
+                return enumList;
+            } else if (value instanceof ArrayNode) {
+                for (JsonNode no: (ArrayNode) value){
+                    enumList = getEnumList((ObjectNode) no);
+                    if (enumList != null) {
+                        return enumList;
+                    }
+                }
+            } else if (value instanceof ObjectNode) {
+                enumList = getEnumList((ObjectNode) value);
+                if (enumList != null) {
+                    return enumList;
+                }
+            } else{
+                //
+            }
+        }
+        return enumList;
+    }
+
     private Map<String, Object> processModels(CodegenConfig config, Map<String, Schema> definitions) {
         Map<String, Object> objs = new HashMap<String, Object>();
         objs.put("package", config.modelPackage());
@@ -1165,6 +1221,32 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
                 throw new RuntimeException("schema cannot be null in processModels");
             CodegenModel cm = config.fromModel(key, schema);
             Map<String, Object> mo = new HashMap<String, Object>();
+
+            Pattern r = Pattern.compile("\"enum\" *: *\\[.*\\]");
+            for (CodegenProperty v: cm.vars){
+                if (!v.isEnum){  // 修复 isEnum 属性
+                    Matcher m = r.matcher(v.jsonSchema);
+                    if (m.find()) {
+                        v.isEnum = true;
+
+                        // 扫描出所有的枚举值
+                        v.allowableValues = new HashMap<String, Object>(){{
+                            put("enumVars", new ArrayList<Map>());  // 这个属性完全没有使用，因此空置
+                            put("values", getEnumList(v.jsonSchema));
+                        }};
+                    }
+                }
+
+                // 减少 allowable values 的数量，它们将会被插入代码注释中
+                if (v.allowableValues == null){
+                    continue;
+                }
+                ArrayList values = (ArrayList) v.allowableValues.get("values");
+                while (values.size() > 30){
+                    values.remove(0);
+                }
+            }
+
             mo.put("model", cm);
             mo.put("importPath", config.toModelImport(cm.classname));
             models.add(mo);
