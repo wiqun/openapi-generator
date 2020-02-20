@@ -147,6 +147,10 @@ public class CodegenConstants {
 
     public static final String PACKAGE_VERSION = "packageVersion";
 
+    // 添加 apiPort，指定端口号（Python Apilib）
+    public static final String API_PORT = "apiPort";
+    public static final String API_POR_DESC = "port for api lib";
+
     public static final String PACKAGE_TITLE = "packageTitle";
     public static final String PACKAGE_TITLE_DESC = "Specifies an AssemblyTitle for the .NET Framework global assembly attributes stored in the AssemblyInfo file.";
     public static final String PACKAGE_PRODUCTNAME = "packageProductName";

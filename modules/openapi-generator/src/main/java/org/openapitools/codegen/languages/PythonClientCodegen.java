@@ -48,6 +48,9 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
     protected String apiDocPath = "docs/";
     protected String modelDocPath = "docs/";
 
+    // 添加 apiPort，指定端口号（Python Apilib）
+    protected String apiPort;
+
     protected Map<Character, String> regexModifiers;
 
     private String testFolder;
@@ -190,7 +193,11 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
 
         if (additionalProperties.containsKey(CodegenConstants.PACKAGE_VERSION)) {
             setPackageVersion((String) additionalProperties.get(CodegenConstants.PACKAGE_VERSION));
-        } 
+        }
+
+        if (additionalProperties.containsKey(CodegenConstants.API_PORT)) {
+            setApiPort((String)additionalProperties.get(CodegenConstants.API_PORT));
+        }
 
         Boolean generateSourceCodeOnly = false;
         if (additionalProperties.containsKey(CodegenConstants.SOURCECODEONLY_GENERATION)) {
@@ -200,6 +207,7 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
         additionalProperties.put(CodegenConstants.PROJECT_NAME, projectName);
         additionalProperties.put(CodegenConstants.PACKAGE_NAME, packageName);
         additionalProperties.put(CodegenConstants.PACKAGE_VERSION, packageVersion);
+        additionalProperties.put(CodegenConstants.API_PORT, apiPort);
 
         if (generateSourceCodeOnly) {
             // tests in <package>/test
@@ -585,6 +593,10 @@ public class PythonClientCodegen extends DefaultCodegen implements CodegenConfig
 
     public void setPackageVersion(String packageVersion) {
         this.packageVersion = packageVersion;
+    }
+
+    public void setApiPort(String apiPort) {
+        this.apiPort = apiPort;
     }
 
     public void setPackageUrl(String packageUrl) {
