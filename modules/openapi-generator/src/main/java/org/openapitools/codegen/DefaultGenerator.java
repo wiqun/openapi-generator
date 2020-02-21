@@ -1174,6 +1174,8 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
             root = (ObjectNode) mapper.readTree(jsonSchema);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Cannot parse Model's json schema: " + e.toString());
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot read Model's json schema: " + e.toString());
         }
 
         return getEnumList(root);
